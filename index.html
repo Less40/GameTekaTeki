@@ -1,1 +1,257 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Teka-Teki</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+            flex-direction: column; /* Menyusun konten secara vertikal */
+        }
 
+        .container {
+            text-align: center;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+            width: 300px;
+            display: none; /* Mulai dalam keadaan tersembunyi */
+        }
+
+        .start-container {
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        .question {
+            margin: 20px 0;
+            font-weight: 600;
+        }
+
+        .score {
+            font-weight: bold;
+            color: #4CAF50;
+        }
+
+        input[type="text"] {
+            padding: 10px;
+            width: calc(100% - 22px);
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            margin: 5px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        #result {
+            margin-top: 15px;
+            font-weight: bold;
+        }
+
+        .btn-skip {
+            background-color: #f44336;
+        }
+
+        .btn-skip:hover {
+            background-color: #d32f2f;
+        }
+
+        .surprise-message {
+            text-align: center;
+            display: none;
+            color: #333;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+
+        .footer {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #777;
+        }
+    </style>
+</head>
+<body>
+    <!-- Tampilan tombol mulai -->
+    <div class="start-container">
+        <h1>Game Teka-Teki</h1>
+        <button onclick="startGame()">Mulai Game</button>
+    </div>
+
+    <!-- Tampilan pertanyaan dan jawaban -->
+    <div class="container" id="gameContainer">
+        <h1>Game Teka-Teki</h1>
+        <div class="question">
+            <p id="hint">Petunjuk: Benda ini digunakan untuk minum, biasanya terbuat dari kaca atau plastik.</p>
+        </div>
+        <p class="score">Poin: <span id="score">0</span></p>
+        <input type="text" id="answer" placeholder="Masukkan jawaban di sini">
+        <div>
+            <button onclick="checkAnswer()">Jawab</button>
+            <button class="btn-skip" onclick="skipQuestion()">Tidak Tahu</button>
+        </div>
+        <p id="result"></p>
+    </div>
+
+    <!-- Pesan kejutan setelah semua pertanyaan selesai -->
+    <div class="surprise-message" id="surpriseMessage">
+        <h2>Selamat! Kamu sudah menjawab semua pertanyaan!</h2>
+        <p>Total Poin Kamu: <span id="finalScore">0</span></p>
+        <p>Apakah kamu ingin bermain lagi?</p>
+        <button onclick="resetGame()">Mulai Lagi</button>
+    </div>
+
+    <!-- Nama Pembuat -->
+    <div class="footer">
+        <p> dibuat oleh: [Charles] </p> <!-- Ganti [Nama Pembuat] dengan nama asli -->
+    </div>
+
+    <script>
+        // Array pertanyaan dan jawaban
+        const questions = [
+    { hint: "Benda ini biasanya ada di dapur dan digunakan untuk menggoreng.", answer: "penggorengan" },
+    { hint: "Buah ini berwarna merah dan sangat manis.", answer: "stroberi" },
+    { hint: "Kendaraan ini memiliki dua roda dan sering digunakan di jalan raya.", answer: "sepeda" },
+    { hint: "Binatang yang suka melompat dan memiliki kantong.", answer: "kanguru" },
+    { hint: "Tempat yang penuh dengan buku dan bisa dipinjam.", answer: "perpustakaan" },
+    { hint: "Makanan ini terbuat dari tepung dan air, sering dipanggang.", answer: "roti" },
+    { hint: "Benda ini sering digunakan untuk menjaga kesehatan gigi.", answer: "sikat gigi" },
+    { hint: "Binatang ini dikenal sebagai raja hutan.", answer: "singa" },
+    { hint: "Alat yang digunakan untuk menulis dengan tinta.", answer: "pulpen" },
+    { hint: "Benda ini dapat terbang di langit dan sering dikaitkan dengan cinta.", answer: "balon" },
+    { hint: "Minuman yang sering disajikan panas, terbuat dari daun.", answer: "teh" },
+    { hint: "Tempat di mana orang berkumpul untuk menonton film.", answer: "bioskop" },
+    { hint: "Makanan yang terkenal dari Italia, terbuat dari adonan tipis.", answer: "pizza" },
+    { hint: "Benda ini membuatmu bisa melihat di malam hari.", answer: "senter" },
+    { hint: "Hasil pertanian ini sering digunakan untuk sarapan.", answer: "sereal" },
+    { hint: "Alat yang membantu memasak makanan dengan suhu tinggi.", answer: "kompor" },
+    { hint: "Benda ini bisa membuat suara keras saat dibunyikan.", answer: "bel" },
+    { hint: "Barang yang dipakai di kepala untuk melindungi dari panas.", answer: "topi" },
+    { hint: "Permainan yang biasanya dimainkan di papan dengan dadu.", answer: "monopoli" },
+    { hint: "Alat yang digunakan untuk membersihkan lantai.", answer: "sapu" },
+    { hint: "Benda kecil yang digunakan untuk memperbaiki pakaian.", answer: "jarum" },
+    { hint: "Binatang ini bisa terbang dan sering menyanyikan lagu.", answer: "burung" },
+    { hint: "Benda yang dipakai untuk menulis di papan tulis.", answer: "kapur" },
+    { hint: "Makanan yang terbuat dari beras, sering disajikan dengan lauk.", answer: "nasi" },
+    { hint: "Benda ini biasanya ada di meja makan untuk membantu makan.", answer: "sendok" },
+    { hint: "Tanaman ini tumbuh di pot dan sering dipelihara di rumah.", answer: "bunga" },
+    { hint: "Benda ini digunakan untuk mendengarkan musik.", answer: "headphone" },
+    { hint: "Bahan makanan ini sering digunakan untuk membuat kue.", answer: "gula" },
+    { hint: "Hewan peliharaan ini sangat setia kepada pemiliknya.", answer: "anjing" },
+    { hint: "Benda yang digunakan untuk menjaga agar tangan tidak kotor saat memasak.", answer: "sarung tangan" },
+    { hint: "Tempat di mana orang bisa belajar berbagai keterampilan.", answer: "kursus" },
+    { hint: "Binatang ini sangat cerdas dan bisa berbicara.", answer: "burung beo" },
+    { hint: "Benda ini digunakan untuk membawa barang saat berbelanja.", answer: "tas" },
+    { hint: "Makanan yang terbuat dari sayuran dan sering disajikan mentah.", answer: "salad" },
+    { hint: "Tempat di mana kita bisa melihat bintang dan bulan di malam hari.", answer: "observatorium" },
+    { hint: "Benda ini dapat digunakan untuk menyalakan api.", answer: "korek api" },
+    { hint: "Makanan penutup yang sering dimakan setelah makan malam.", answer: "puding" },
+    { hint: "Minuman ini terbuat dari buah dan biasanya disajikan dingin.", answer: "jus" },
+    { hint: "Alat ini digunakan untuk memotong kertas.", answer: "gunting" },
+    { hint: "Benda yang digunakan untuk menandai halaman dalam buku.", answer: "penanda" },
+    { hint: "Benda ini dapat dipakai untuk mempercantik rambut.", answer: "gel rambut" },
+    { hint: "Alat musik yang memiliki senar dan dimainkan dengan cara dipetik.", answer: "gitar" },
+    { hint: "Kendaraan yang memiliki empat roda dan bisa digunakan untuk pergi jauh.", answer: "mobil" },
+    { hint: "Benda yang bisa membuat gambar dan sering digunakan di kelas seni.", answer: "pensil warna" },
+    { hint: "Alat yang digunakan untuk mengukur waktu.", answer: "jam" },
+    { hint: "Tempat penyimpanan barang yang memiliki pintu dan bisa dikunci.", answer: "lemari" },
+    { hint: "Benda yang digunakan untuk memberi penerangan di malam hari.", answer: "lampu" },
+    { hint: "Kendaraan yang sering digunakan untuk perjalanan laut.", answer: "kapal" },
+    { hint: "Benda yang biasanya ada di meja makan untuk menyajikan makanan.", answer: "piring" },
+    { hint: "Alat yang digunakan untuk menghubungkan satu komputer ke komputer lain.", answer: "modem" },
+    { hint: "Kendaraan yang digunakan untuk mengangkut barang di jalan raya.", answer: "truk" },
+    { hint: "Benda ini digunakan untuk mencuci tangan atau wajah.", answer: "sabun" },
+    { hint: "Benda yang bisa digunakan untuk membuat catatan penting.", answer: "sticky note" },
+    { hint: "Alat yang digunakan untuk merawat rambut agar tidak kusut.", answer: "sisir" },
+    { hint: "Tempat di mana orang membeli makanan dan minuman.", answer: "toko" },
+    { hint: "Benda yang digunakan untuk mengukur suhu tubuh.", answer: "termometer" },
+    { hint: "Makanan ini dibuat dengan menggoreng adonan tepung.", answer: "donat" }
+];
+
+        let currentQuestion = 0;
+        let score = 0;
+
+        // Fungsi untuk memulai game
+        function startGame() {
+            document.querySelector(".start-container").style.display = "none"; // Sembunyikan tombol mulai
+            document.getElementById("gameContainer").style.display = "block"; // Tampilkan game
+            loadQuestion(); // Muat pertanyaan pertama
+        }
+
+        function loadQuestion() {
+            if (currentQuestion >= questions.length) {
+                showSurpriseMessage(); // Tampilkan pesan kejutan jika sudah selesai semua
+            } else {
+                const hintElement = document.getElementById("hint");
+                hintElement.textContent = "Petunjuk: " + questions[currentQuestion].hint;
+                document.getElementById("answer").value = "";  // Reset input jawaban
+                document.getElementById("result").textContent = ""; // Reset pesan hasil
+            }
+        }
+
+        function checkAnswer() {
+            const userAnswer = document.getElementById("answer").value.toLowerCase();
+            const resultElement = document.getElementById("result");
+
+            if (userAnswer === questions[currentQuestion].answer) {
+                resultElement.textContent = "Selamat! Jawaban kamu benar!";
+                resultElement.style.color = "green";
+                score += 10; // Tambahkan poin
+                document.getElementById("score").textContent = score; // Tampilkan skor
+                currentQuestion++; // Pindah ke pertanyaan berikutnya
+                setTimeout(loadQuestion, 2000); // Tunda sebelum pertanyaan berikutnya muncul
+            } else {
+                resultElement.textContent = "Jawaban salah, coba lagi!";
+                resultElement.style.color = "red";
+            }
+        }
+
+        function skipQuestion() {
+            currentQuestion++; // Langsung ke pertanyaan berikutnya
+            loadQuestion();
+        }
+
+        function showSurpriseMessage() {
+            document.getElementById("gameContainer").style.display = "none"; // Sembunyikan tampilan game
+            document.getElementById("surpriseMessage").style.display = "block"; // Tampilkan pesan kejutan
+            document.getElementById("finalScore").textContent = score; // Tampilkan total poin
+        }
+
+        function resetGame() {
+            currentQuestion = 0; // Reset pertanyaan ke awal
+            score = 0; // Reset poin
+            document.getElementById("score").textContent = score; // Reset tampilan poin
+            document.getElementById("surpriseMessage").style.display = "none"; // Sembunyikan pesan kejutan
+            document.getElementById("gameContainer").style.display = "block"; // Tampilkan game lagi
+            loadQuestion(); // Muat pertanyaan pertama lagi
+        }
+    </script>
+</body>
+  </html>
